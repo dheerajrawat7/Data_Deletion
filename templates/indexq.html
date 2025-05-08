@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deletion/Scheduling</title>
+    <!-- External CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    
+    <!-- Internal CSS -->
+    <style>
+        /* Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #95d5b2;
+            color: black;
+            padding: 20px;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            margin: 15px 0;
+            font-size: large;
+            font-weight: bold;
+        }
+        .sidebar ul li a {
+            color: black;
+            text-decoration: none;
+        }
+        .sidebar ul li:hover {
+            background-color: black !important;
+            color:white !important;
+            border-radius: 5px;
+        }
+        .sidebar ul li:hover a {
+            color: white !important;
+        }
+        .sidebar h3 {
+            font-weight: bold;
+            color: black;                 
+        }
+        .sidebar .btn {
+            font-size:large;
+            font-weight: bold;
+        }
+        
+        /* Analyze Button */
+        #AnalyzeButton {
+            background-color: #95d5b2 ;
+            border: none;
+            color: black !important;
+            padding: 0px 0px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-bottom: 15px;
+        }
+        #AnalyzeButton:hover {
+            background-color: black !important;
+            color: white !important;
+            border-radius: 5px;
+        }
+    
+        /* Dropdown Menu */
+        .dropdown-menu {
+            background-color: #95d5b2 !important;
+            color: black !important;
+            border: 2px solid black !important;
+            border-radius: 10px;
+        }
+        .dropdown-menu .dropdown-item:hover {
+            background-color: black !important;
+            color: white !important;
+        }
+    
+        /* Performance Button */
+        #PerformanceButton {
+            background-color: transparent !important;
+            border: none !important;
+            color: black !important;
+            padding: 0px 0px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-bottom: 20px;
+        }
+        #PerformanceButton:hover {
+            background-color: black !important;
+            color: white !important;
+            border-radius: 5px;
+        }
+    
+        /* Welcome Page */
+        .welcome-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            background-color: #f5f9f7;
+        }
+        .welcome-container h1 {
+            font-size: 60px;
+            font-weight: bold;
+            color: black;
+        }
+        .welcome-container p {
+            font-size: 32px;
+            color: #333;
+            margin-top: 10px;
+        }
+    
+        /* Main Content Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow-x: hidden;
+            color: black !important;
+        }
+    
+        /* Content Sections */
+        .content-section {
+            margin-left: 280px;
+            padding: 20px;
+            width: calc(100% - 280px);
+            display: none;
+            background-color: #f5f9f7;
+            min-height: 100vh;
+        }
+    
+        /* Wrapper Styling */
+        .wrapper {
+            display: flex;
+            gap: 20px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    
+        /* Table Details Section Specific Styles */        
+        #tableDetailsSection {
+            margin-left: 5px;
+            padding: 5px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+        }
+        
+        .form-group {
+            flex: 1;
+            margin: 3px 0;
+            min-width: 80px;
+        }
+        
+        .form-group label {
+            display: inline-block;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 4px;
+        }
+        
+        #td_key_column {
+            min-width: 100px;
+        }
+        
+        #tableStatisticsResults {
+            margin-top: 5px;
+            min-height: 120px;
+        }
+        
+        .custom-btn {
+            padding: 4px 8px;
+            margin-top: 3px;
+        }
+        /* Custom Button Styles */
+        .custom-btn {
+            background-color: #95d5b2;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+        .custom-btn:hover {
+            background-color: #000;
+            color: white;
+            transform: scale(1.05);
+        }
+        .custom-btn:active {
+            background-color: #333;
+            transform: scale(0.98);
+        }
+    
+        .content-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 1200px;
+            gap: 50px;
+        }
+    
+        .left-section, .right-section {
+            width: 50%;
+            padding: 20px;
+        }
+    
+        /* Modal Styling */
+        .modal {
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-dialog {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+        .close {
+            border: none;
+            background: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    
+        /* Additional Styles */
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            position: center;
+        }
+        .heading-container {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .heading-container h2 {
+            font-size: 40px;
+            font-weight: bold;
+            color: black;
+        }
+        .dropdown-menu.show {
+            display: block !important;
+        }
+    </style>
+</head>
+
+<body>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <h3>DATA</h3>
+        <ul>
+        <li><a href="#" onclick="showMainContent()">Data Deletion/Scheduling</a></li>
+        </ul>
+        <ul>
+        <li><a href="#" onclick="showTableDetailsSection()">Table Details</a></li>
+        </ul>
+
+        <!-- Analyze Dropdown -->
+        <div class="btn-group me-4">
+            <button id="AnalyzeButton" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                Analyze Database
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="analyzeDatabase('ANALYZE')">Analyze</a></li>
+                <li><a class="dropdown-item" href="#" onclick="analyzeDatabase('VACUUM FULL ANALYZE')">Vacuum Full Analyze</a></li>
+                <li><a class="dropdown-item" href="#" onclick="analyzeDatabase('VACUUM ANALYZE INDEX_CLEANUP')">Vacuum Analyze Index Cleanup</a></li>
+            </ul>
+        </div>
+        <!-- Performance Dropdown -->
+        <div class="btn-group me-4">
+            <button id="PerformanceButton" class="btn dropdown-toggle" data-bs-toggle="dropdown">
+                Performance
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/performance/database_statistics">Database Statistics</a></li>
+                <li><a class="dropdown-item" href="/performance/report_statistics">Table Statistics</a></li>
+            </ul>
+        </div>
+        <h3>REPORTS</h3>
+        <ul>
+            <li><a href="/performance/master_table">Master Data</a></li>
+            <li><a href="/performance/delete_data_log">Delete Data Log</a></li>
+            <li><a href="/performance/scheduled_execution">Scheduled Execution</a></li>
+        </ul>
+    </div>
+    
+    <!-- Welcome Page -->
+    <div id="welcomePage" class="welcome-container">
+        <h1>Welcome to Performance Module</h1>
+        <p>Manage your data efficiently with scheduling and deletion features.</p>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContentContainer" class="content-section">
+        <div class="wrapper">
+            <div class="content-container">
+                <div class="left-section">
+                    <div class="heading-container">
+                        <h2>Data Deletion/Scheduling</h2>
+                    </div>
+                    <form>
+                        <div class="form-group">
+                            <label for="database">Database:</label>
+                            <select id="database" class="form-select" onchange="fetchTables()">
+                                <option value="">Select a Database</option>
+                                <option value="BHAI01">BHAI01</option>
+                                <option value="Test_Delete">Test_Delete</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="table">Table:</label>
+                            <select id="table" class="form-select" onchange="fetchColumns()">
+                                <option value="">Select a Table</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="key_column">Key Column:</label>
+                            <select id="key_column" class="form-select" onchange="fetchTableDetails()">
+                                <option value="">Select a Column</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="right-section">
+                    <div class="details-section">
+                        <h4>Table Details</h4>
+                        <p><strong>Table Name:</strong> <span id="table_name">---</span></p>
+                        <p><strong>Table Size:</strong> <span id="table_size">---</span></p>
+                        <p><strong>Record Count:</strong> <span id="record_count">---</span></p>
+                        <p><strong>Min Date:</strong> <span id="min_date">---</span></p>
+                        <p><strong>Max Date:</strong> <span id="max_date">---</span></p>
+
+                        <div class="delete-option">
+                            <div class="delete-method">
+                                <label>Delete Option:</label>
+                                <select id="delete_method" class="form-select" onchange="toggleDeleteOptions()">
+                                    <option value="days">By Days</option>
+                                    <option value="date">By Date</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="record_days">Number of Days to Keep Records: </label>
+                                <input type="number" id="record_days" class="form-control" onchange="calculateDeleteDate()">
+                            </div>
+
+                            <p><strong style="color: #ef233c;">Record Delete Date: </strong> <span id="delete_date" style="color: #ef233c">---</span></p>
+                        </div>
+ 
+                        <div class="buttons">
+                            <button id ="delete_btn" class="custom-btn" onclick="deleteData()">Delete</button>
+                            <button id="schedule_btn" class="custom-btn" onclick="openScheduleModal()">Schedule</button>
+                            <button class="custom-btn" onclick="unschedule()">Unschedule</button>
+                        </div>
+                        
+                        <!-- Schedule Modal -->
+                        <div id="schedule_modal" class="modal" style="display: none;">
+                            <div class="modal-content">
+                                <span class="close" onclick="closeScheduleModal()">&times;</span>
+                                <h3>Schedule Task</h3>
+                                
+                                <label for="schedule_frequency">Select Frequency:</label>
+                                <select id="schedule_frequency" class="form-select" name="frequency" onchange="updateNextRunDate()">
+                                    <option value="1">1 (Daily)</option>
+                                    <option value="2">2 (Alternate Days)</option>
+                                    <option value="7">7 (Weekly)</option>
+                                    <option value="30">30 (Monthly)</option>
+                                </select>
+
+                                <p><strong>Next Run Date:</strong> <span id="next_run_date">---</span></p>
+                    
+                                <button class="btn btn-success" onclick="validateBeforeSchedule()">Confirm Schedule</button>
+                                <button class="btn btn-secondary" onclick="closeScheduleModal()">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Table Details Section -->
+    <div id="tableDetailsSection" class="content-section" style="display: none; margin-left: 300px; padding: 20px;">
+        <div class="heading-container">
+            <h2>Table Details</h2>
+        </div>
+        
+        <form>
+            <div class="form-group">
+                <label for="td_database">Database:</label>
+                <select id="td_database" class="form-select" onchange="fetchTablesForDetails()">
+                    <option value="">Select a Database</option>
+                    <option value="BHAI01">BHAI01</option>
+                    <option value="Test_Delete">Test_Delete</option>
+                </select>
+            </div>
+    
+            <div class="form-group">
+                <label for="td_table">Table:</label>
+                <select id="td_table" class="form-select" onchange="fetchColumnsForDetails()">
+                    <option value="">Select a Table</option>
+                </select>
+            </div>
+    
+            <div class="form-group">
+                <label for="td_key_column">Key Column:</label>
+                <select id="td_key_column" class="form-select">
+                    <option value="">Select a Column</option>
+                </select>
+            </div>
+    
+            <button type="button" class="custom-btn" onclick="fetchTableStats()">Show Statistics</button>
+        </form>
+    
+        <div id="tableStatisticsResults" style="margin-top: 20px;"></div>
+    </div>
+    <!-- External JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    
+    <!-- Internal JavaScript -->
+    <script>
+        // UI Functions
+        function showMainContent() {
+            document.getElementById("welcomePage").style.display = "none";
+            document.getElementById("mainContentContainer").style.display = "block";
+            document.getElementById("tableDetailsSection").style.display = "none";
+        }
+
+        function showTableDetailsSection() {
+            document.getElementById("welcomePage").style.display = "none";
+            document.getElementById("mainContentContainer").style.display = "none";
+            document.getElementById("tableDetailsSection").style.display = "block";
+        }
+
+        function openScheduleModal() {
+            document.getElementById("schedule_modal").style.display = "flex";
+            updateNextRunDate();
+        }
+
+        function closeScheduleModal() {
+            document.getElementById("schedule_modal").style.display = "none";
+        }
+
+        function updateNextRunDate() {
+            const frequency = document.getElementById("schedule_frequency").value;
+            if (frequency) {
+                let nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + parseInt(frequency));
+                document.getElementById("next_run_date").textContent = nextDate.toISOString().split('T')[0];
+            }
+        }
+
+        function goHome() {
+            localStorage.setItem("showSidebar", "true");
+            window.location.href = "/";
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            if (localStorage.getItem("showSidebar") === "true") {
+                localStorage.removeItem("showSidebar");
+                showPerformanceSidebar();
+            }
+        });
+
+        // Data Fetching Functions
+        async function fetchTables() {
+            const database = document.getElementById("database").value;
+            const tableDropdown = document.getElementById("table");
+            tableDropdown.innerHTML = '<option value="">Select a Table</option>';
+
+            if (database) {
+                let ajaxUrl = "{{ url_for('get_tables') }}";
+                const response = await fetch(`${ajaxUrl}?database=${database}`);
+                const tables = await response.json();
+                tables.forEach(table => {
+                    const option = document.createElement("option");
+                    option.value = table;
+                    option.textContent = table;
+                    tableDropdown.appendChild(option);
+                });
+            }
+        }
+
+        async function fetchColumns() {
+            const database = document.getElementById("database").value;
+            const table = document.getElementById("table").value;
+            const columnDropdown = document.getElementById("key_column");
+            columnDropdown.innerHTML = '<option value="">Select a Column</option>';
+
+            if (database && table) {
+                let ajaxUrl_col = "{{ url_for('get_columns') }}";
+                const response = await fetch(`${ajaxUrl_col}?database=${database}&table=${table}`);
+                const columns = await response.json();
+                columns.forEach(column => {
+                    const option = document.createElement("option");
+                    option.value = column;
+                    option.textContent = column;
+                    columnDropdown.appendChild(option);
+                });
+            }
+        }
+
+        async function fetchTableDetails() {
+            const database = document.getElementById("database").value;
+            const table = document.getElementById("table").value;
+            const column = document.getElementById("key_column").value;
+
+            if (database && table && column) {
+                let ajaxUrl_detail = "{{ url_for('get_table_details') }}";
+                const response = await fetch(`${ajaxUrl_detail}?database=${database}&table=${table}&key-column=${column}`);
+                const details = await response.json();
+                document.getElementById("table_name").textContent = table || "---";
+                document.getElementById("table_size").textContent = details.table_size || "---";
+                document.getElementById("record_count").textContent = details.record_count || "---";
+                document.getElementById("min_date").textContent = details.min_date || "---";
+                document.getElementById("max_date").textContent = details.max_date || "---";
+            }
+        }
+
+        function toggleDeleteOptions() {
+            const method = document.getElementById("delete_method").value;
+            document.getElementById("days_option").style.display = method === "days" ? "block" : "none";
+            document.getElementById("date_option").style.display = method === "date" ? "block" : "none";
+                       
+            calculateDeleteDate();
+        }
+       
+        async function calculateDeleteDate() {
+            let ajaxUrl_date = "{{ url_for('get_date_details') }}";
+            const database = document.getElementById("database").value;
+            const table = document.getElementById("table").value;
+            const keyColumn = document.getElementById("key_column").value;
+            const days = document.getElementById("record_days").value;
+            const deleteby = document.getElementById("delete_method").value;
+
+            if (!database || !table || !keyColumn || !days || !deleteby) {
+                alert("Please select database, table, key column, and enter the number of days.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${ajaxUrl_date}?database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}&key-column=${encodeURIComponent(keyColumn)}&days=${days}&delete-by=${deleteby}`);
+
+                const result = await response.json();
+
+                if (result.delete_date) {
+                    document.getElementById("delete_date").textContent = result.delete_date;
+                } else {
+                    alert(result.error || "Something went wrong.");
+                    document.getElementById("delete_date").textContent = "---";
+                }
+
+            } catch (error) {
+                alert("Request failed: " + error.message);
+                document.getElementById("delete_date").textContent = "---";
+            }
+        }
+
+        async function deleteData() {
+            const database = document.getElementById("database").value;
+            const table = document.getElementById("table").value;
+            const keyColumn = document.getElementById("key_column").value;
+            const days = document.getElementById("record_days").value;
+            const deleteby = document.getElementById("delete_method").value;
+
+            if (!database || !table || !keyColumn || !days || !deleteby) {
+                alert("Please select database, table, key column, and enter the number of days.");
+                return;
+            }
+
+            const confirmDelete = confirm("Are you sure you want to delete records?");
+            if (!confirmDelete) {
+                return;
+            }
+
+            try {
+                let ajaxUrl_delete = "{{ url_for('delete_data') }}";
+                const response = await fetch(`${ajaxUrl_delete}?database=${database}&table=${table}&key-column=${keyColumn}&days=${days}&delete-by=${deleteby}`, {  
+                    method: "POST"
+                });
+
+                const result = await response.json();
+                alert(result.message || result.error);
+
+                if (result.status === "success") {
+                    console.log("Deletion successful!");                   
+                }
+            } catch (error) {
+                console.error("Error deleting data:", error);
+            }
+        }
+
+        window.onload = function () {
+
+        document.getElementById("delete_btn").addEventListener("click", deleteData);
+
+        };
+
+        async function validateBeforeSchedule() {            
+            const database = document.getElementById("database").value;
+            const table = document.getElementById("table").value;
+            const keyColumn = document.getElementById("key_column").value;
+            const days = document.getElementById("record_days").value;
+            const frequency = document.getElementById("schedule_frequency").value;
+            const deleteby = document.getElementById("delete_method").value;
+            
+            if (!database || !table || !keyColumn || !days || !frequency || !deleteby) {
+                alert("Please fill in all fields before scheduling.");
+                return;
+            }
+
+            try {
+                let ajaxUrl_sched = "{{ url_for('schedule_data') }}";
+                const response = await fetch(`${ajaxUrl_sched}?database=${database}&table=${table}&key-column=${keyColumn}&days=${days}&frequency=${frequency}&delete-by=${deleteby}`, {  
+                    method: "POST"
+                });
+
+                const result = await response.json();
+                alert(result.message || result.error);
+
+                if (result.status === "success") {
+                    console.log("Scheduling successful! ");                    
+                }
+            } catch (error) {
+                console.error("Error scheduling data:", error);
+            }
+        }
+
+        async function unschedule() {            
+            const database = document.getElementById("database").value;
+            const table = document.getElementById("table").value;
+            const keyColumn = document.getElementById("key_column").value;
+            
+            if (!database || !table || !keyColumn) {
+                alert("Please fill in all fields before scheduling.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Un-Schedule?database=${database}&table=${table}&key-column=${keyColumn}`, {  
+                    method: "POST"
+                });
+
+                const result = await response.json();
+                alert(result.message || result.error);
+
+                if (result.status === "success") {
+                    console.log("Unscheduling successful! ");                    
+                }
+            } catch (error) {
+                console.error("Error Unscheduling data:", error);
+            }
+        }
+
+        // Database Analysis Functions
+        function analyzeDatabase(option) {
+            let message = "";
+
+            if (option === "ANALYZE") {
+                message = "The process will take time. Do you wish to continue?";
+            } else if (option === "VACUUM FULL ANALYZE") {
+                message = "Access to the table will be blocked, and extra disk space will be used during the operation. Do you wish to continue?";
+            } else if (option === "VACUUM ANALYZE INDEX_CLEANUP") {
+                message = "The process will take time. Do you wish to continue?";
+            }
+
+            if (confirm(message)) {
+                let ajaxUrl_analyze = "{{ url_for('analyze') }}";
+                fetch(ajaxUrl_analyze, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: option })
+                })
+                .then(response => response.json())
+                .then(data => alert(data.message))
+                .catch(error => console.error('Error:', error));
+            }
+        }
+        // For the Table Details section
+        async function fetchTablesForDetails() {
+            const database = document.getElementById("td_database").value;
+            const tableDropdown = document.getElementById("td_table");
+            tableDropdown.innerHTML = '<option value="">Select a Table</option>';
+
+            if (database) {
+                let ajaxUrl = "{{ url_for('get_tables') }}";
+                try {
+                    const response = await fetch(`${ajaxUrl}?database=${database}`);
+                    const tables = await response.json();
+                    tables.forEach(table => {
+                        const option = document.createElement("option");
+                        option.value = table;
+                        option.textContent = table;
+                        tableDropdown.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error("Error fetching tables:", error);
+                    alert("Failed to fetch tables. Check console for details.");
+                }
+            }
+        }
+
+        async function fetchColumnsForDetails() {
+            const database = document.getElementById("td_database").value;
+            const table = document.getElementById("td_table").value;
+            const columnDropdown = document.getElementById("td_key_column");
+            columnDropdown.innerHTML = '<option value="">Select a Column</option>';
+
+            if (database && table) {
+                let ajaxUrl_col = "{{ url_for('get_columns') }}";
+                try {
+                    const response = await fetch(`${ajaxUrl_col}?database=${database}&table=${table}`);
+                    const columns = await response.json();
+                    columns.forEach(column => {
+                        const option = document.createElement("option");
+                        option.value = column;
+                        option.textContent = column;
+                        columnDropdown.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error("Error fetching columns:", error);
+                    alert("Failed to fetch columns. Check console for details.");
+                }
+            }
+        }
+
+        //  the fetchTableStats function         
+        async function fetchTableStats() {
+            const database = document.getElementById("td_database").value;
+            const table = document.getElementById("td_table").value;
+            const key_column = document.getElementById("td_key_column").value;
+
+            if (!database || !table || !key_column) {
+            alert("Please select a database, table, and key column.");
+            return;
+            }
+            let ajaxUrl_stats = "{{ url_for('fetch_table_stats') }}";         
+
+            try {
+            const response = await fetch(
+                `${ajaxUrl_stats}?database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}&key_column=${encodeURIComponent(key_column)}`
+            );
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const stats = await response.json();
+
+                if (stats.error) {
+                    alert(stats.error);
+                    return;
+                }
+
+                displayStatsTable(stats);
+            } catch (error) {
+                console.error("Error fetching table stats:", error);
+                alert("Failed to fetch table statistics. Check console for details.");
+            }
+        }
+
+        // Add the missing displayStatsTable function
+        function displayStatsTable(stats) {
+            const container = document.getElementById("tableStatisticsResults");
+            
+            // Clear previous results
+            container.innerHTML = '';
+            // Handle empty data case
+            if (stats.is_empty || (stats.length === 1 && stats.message)) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-info'; // Use Bootstrap alert styling
+                alertDiv.textContent = stats.message || "No data found for the selected parameters.";
+                container.appendChild(alertDiv);
+                return;
+            }
+            // Create table
+            const table = document.createElement('table');
+            table.className = 'table table-striped table-bordered';
+            
+            // Create table header
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            
+            // Add headers based on the keys of the first item
+            if (stats.length > 0) {
+                Object.keys(stats[0]).forEach(key => {
+                    const th = document.createElement('th');
+                    th.textContent = key;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+            }
+            
+            // Create table body
+            const tbody = document.createElement('tbody');
+            
+            // Add data rows
+            stats.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                Object.values(row).forEach(value => {
+                    const td = document.createElement('td');
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                
+                tbody.appendChild(tr);
+            });
+            
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+        
+        // event listeners for Table Details section to vanish the data in the dropdowns and results
+        document.getElementById("td_database").addEventListener("change", function() {
+            // Clear dropdowns and results
+            document.getElementById("td_table").value = '';
+            document.getElementById("td_key_column").innerHTML = '<option value="">Select a Column</option>';
+            document.getElementById("tableStatisticsResults").innerHTML = '';
+        });
+
+        document.getElementById("td_table").addEventListener("change", function() {
+            // Clear column dropdown and results
+            document.getElementById("td_key_column").innerHTML = '<option value="">Select a Column</option>';
+            document.getElementById("tableStatisticsResults").innerHTML = '';
+        });
+
+        document.getElementById("td_key_column").addEventListener("change", function() {
+            // Clear just results
+            document.getElementById("tableStatisticsResults").innerHTML = '';
+        });
+
+
+
+         //event listeners for Deletion and Scheduling section to vanish the data in the dropdowns and results
+        document.getElementById("database").addEventListener("change", function() {
+            // Clear dropdowns and results
+            document.getElementById("table").value = '';
+            document.getElementById("key_column").innerHTML = '<option value="">Select a Column</option>';
+            // Clear all results
+            document.getElementById("table_name").textContent = "---";
+            document.getElementById("table_size").textContent = "---";
+            document.getElementById("record_count").textContent = "---";
+            document.getElementById("min_date").textContent = "---";
+            document.getElementById("max_date").textContent = "---";
+            document.getElementById("delete_date").textContent = "---";
+        });
+
+        document.getElementById("table").addEventListener("change", function() {
+            // Clear column dropdown and results
+            document.getElementById("key_column").innerHTML = '<option value="">Select a Column</option>';
+            // Clear all results
+            document.getElementById("table_name").textContent = "---";
+            document.getElementById("table_size").textContent = "---";
+            document.getElementById("record_count").textContent = "---";
+            document.getElementById("min_date").textContent = "---";
+            document.getElementById("max_date").textContent = "---";
+            document.getElementById("delete_date").textContent = "---";
+            document.getElementById("record_days").value = ''; // Clear the input field
+        });
+
+        document.getElementById("key_column").addEventListener("change", function() {
+            // Clear just the delete date since table details will be updated by fetchTableDetails()
+            document.getElementById("delete_date").textContent = "---";
+            document.getElementById("record_days").value = ''; // Clear the input field
+        });
+
+        
+        // Reset deletion page fields when clicking sidebar
+        function showMainContent() {
+            document.getElementById("welcomePage").style.display = "none";
+            document.getElementById("mainContentContainer").style.display = "block";
+            document.getElementById("tableDetailsSection").style.display = "none";
+
+            // Reset all fields in deletion page
+            document.getElementById("database").value = '';
+            document.getElementById("table").value = '';
+            document.getElementById("key_column").innerHTML = '<option value="">Select a Column</option>';
+            document.getElementById("table_name").textContent = "---";
+            document.getElementById("table_size").textContent = "---";
+            document.getElementById("record_count").textContent = "---"; 
+            document.getElementById("min_date").textContent = "---";
+            document.getElementById("max_date").textContent = "---";
+            document.getElementById("delete_date").textContent = "---";
+            document.getElementById("record_days").value = '';
+        }
+
+        // Reset table details page fields when clicking sidebar
+        function showTableDetailsSection() {
+            document.getElementById("welcomePage").style.display = "none";
+            document.getElementById("mainContentContainer").style.display = "none";
+            document.getElementById("tableDetailsSection").style.display = "block";
+
+            // Reset all fields in table details page
+            document.getElementById("td_database").value = '';
+            document.getElementById("td_table").value = '';
+            document.getElementById("td_key_column").innerHTML = '<option value="">Select a Column</option>';
+            document.getElementById("tableStatisticsResults").innerHTML = '';
+        }
+
+    </script>    
+</body>
+</html>
