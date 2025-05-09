@@ -8,7 +8,7 @@ import re
 
 
 # Single base connection string to the PostgreSQL server
-BASE_CONNECTION = 'postgresql://postgres:12345@10.133.132.90:5432/'
+BASE_CONNECTION = 'enter your base connection string'
 
 
 # Get connection to a specific database
@@ -19,7 +19,7 @@ def get_connection(db_name):
 # Get connection to a Global database
 def get_global_connection():
     """Connect to global database'"""
-    return psycopg2.connect('postgresql://postgres:12345@10.133.132.90:5432/Globe1')
+    return psycopg2.connect('enter your global connection string')
 
 
 
