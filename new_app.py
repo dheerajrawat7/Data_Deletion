@@ -12,8 +12,8 @@ min_date=None
 
 # Database configurations
 DATABASES = {
-    'Test_Delete': 'postgresql://postgres:abbydheeraj@localhost:5432/postgres',
-    'Test_Globe1': 'postgresql://postgres:abbydheeraj@localhost:5432/Test_Globe1'
+    'Test_Delete': 'enter your database connection string',
+    'Test_Globe1': 'enter your database connection string'
 }
 
 # Utility function to get a database connection
